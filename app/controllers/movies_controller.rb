@@ -7,26 +7,41 @@ class MoviesController < ApplicationController
   end
 
   def index
-    
-    @movies = Movie.all
+     @movies = Movie.all
+    # if params[:sort]
+    #   @movies = Movie.order(params[:sort])
+    # else
+    #   @movies = Movie.all
+    # end
     @all_ratings = Movie.pluck(:rating).uniq
-    @filter_ratings = @ratings
+    @checks = @all_ratings
     
-    @checks = params[:ratings] == nil ? @all_ratings : params[:ratings].keys
+        
+    if params.key?(:sort)
+      session[:sort] = params[:sort]
+    end
     
-    # Part 1
-    if params[:sort]=='title'
-      @movies = @movies.order(:title)
-      @title = 'bg-warning text-dark'
-    elsif params[:sort] == 'release'
-      @movies = @movies.order(:release_date)
-      @release = 'bg-warning text-dark'
-    elsif params[:sort]==nil
-      @movies = Movie.where({rating: @checks})
-      
+    if params.key?(:all_ratings)
+      session[:all_ratings] = params[:all_ratings].keys
     end
     
     
+    if session.key?(:all_ratings)
+      @checks = session[:all_ratings]
+       @movies = @movies.where(rating: @checks)
+    end
+    
+    
+    if session[:sort] == 'title'
+       @movies = @movies.order(:title)
+      @title = 'bg-warning text-dark'
+    elsif session[:sort] == 'release'
+      @movies = @movies.order(:release_date)
+      @release = 'bg-warning text-dark'
+    end
+     
+    flash.keep
+
   end
 
   def new
